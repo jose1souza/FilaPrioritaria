@@ -41,4 +41,4 @@ Este projeto tem como finalidade o ensino de estruturas de dados básicas com fo
 
 ## 🧑‍💻 Autor
 
-Projeto desenvolvido para fins didáticos no IFSULDEMINAS - Campus Machado.
+Projeto desenvolvido por José Carlos Souza no IFSULDEMINAS - Campus Machado.
