@@ -1,29 +1,51 @@
-const minhaFila = new FilaEncadeada();
+const filaGeral = new FilaEncadeada();
+const filaPriotaria = new FilaEncadeada();
+let cont = 0;
 // outra fila
 function addElemento(){
    const nome = document.getElementById("txtnovoNome");
-    const cpf = document.getElementById("txtnovoCPF");
+   const cpf = document.getElementById("txtnovoCPF");
+   const data = document.getElementById("txtnovaData");
     // data de nascimento
    // if(!minhaFila.isFull()){
        const novoAtendimento = new Atendimento();
          novoAtendimento.nome = nome.value;
          novoAtendimento.cpf = cpf.value;
+         novoAtendimento.data_nascimento = data.value;
          novoAtendimento.data = obterDataAtual();
          novoAtendimento.hora = obterHoraAtual();
-
-       minhaFila.enqueue(novoAtendimento);
-       mostrarFila();
-       nome.value = ""; 
-       cpf.value = ""; 
-       nome.focus(); 
+      if(calcularIdade(novoAtendimento.data_nascimento) >= 60){
+        filaPriotaria.enqueue(novoAtendimento);
+        mostrarFila();
+        nome.value = ""; 
+        cpf.value = ""; 
+        data.value = "";
+        nome.focus(); 
+      }
+      else{
+        filaGeral.enqueue(novoAtendimento);
+        mostrarFila();
+        nome.value = ""; 
+        cpf.value = ""; 
+        data.value = "";
+        nome.focus(); 
+      }
    // } 
    // else
     //    alert("Fila cheia!");     
 }// fim addElemento
 //-----------------------------------
 function atenderFila(){
-   if(!minhaFila.isEmpty()){
-      let pessoaAtendida = minhaFila.dequeue();
+  if(!filaPriotaria.isEmpty() && cont <= 3){
+    let pessoaAtendida = filaPriotaria.dequeue();
+    mostrarMensagemRemocao(pessoaAtendida);
+    cont++;
+    // Armazena o último atendido no localStorage
+    localStorage.setItem('ultimoAtendido', pessoaAtendida.nome);
+    mostrarFila();
+  }
+  if(!filaGeral.isEmpty()){
+      let pessoaAtendida = filaGeral.dequeue();
       mostrarMensagemRemocao(pessoaAtendida);
       // Armazena o último atendido no localStorage
       localStorage.setItem('ultimoAtendido', pessoaAtendida.nome);
@@ -31,14 +53,14 @@ function atenderFila(){
       //salvar no banco texto do navegador
    }
    else
-      alert("Fila vazia!");
+      alert("Filas vazia!");
 }
 //--------------------------------------------------------------------------------------------
  function buscarCpf() {
     const cpf = document.getElementById("txtnovoCPF");
     let encontrou=false;
     let posicao=0;
-    for (const item of minhaFila) {
+    for (const item of filaGeral) {
       posicao++;
       if (item.cpf===cpf.value) {
         encontrou=true;
@@ -55,26 +77,47 @@ function mostrarMensagemRemocao(pessoaAtendida) {
     mensagem.style.display = "block";
 }
 //--------------------------------------------------------------------------------------------
- // Função para atualizar a exibição da fila
  function mostrarFila() {
-   console.log("Fila atual: " + minhaFila.toString());
-      const listaPessoasFila = document.getElementById("listFila");
-      const lblPessoasFila = document.getElementById("lblPessoasFila");
-      /*listaPessoasFila.innerText = minhaFila.toString();
-      console.log(minhaFila.toString());*/
-    if (minhaFila.isEmpty()) {
-        lblPessoasFila.innerText = "Fila vazia!";
-        listaPessoasFila.innerText = "";
-    } else {
-        lblPessoasFila.innerText = "Pessoas na fila:";
-          listaPessoasFila.innerText = "";
-          for (const atendimento of minhaFila){
-            const li = document.createElement("li");
-            li.innerText = atendimento.toString();
-            listaPessoasFila.appendChild(li);
+  console.log("Fila atual: " + filaGeral.toString());
+  console.log("Fila atual: " + filaPriotaria.toString());
+
+  const listaPessoasFila = document.getElementById("listFila");
+  const lblPessoasFila = document.getElementById("lblPessoasFila");
+
+  listaPessoasFila.innerText = ""; // Limpa a lista antes de adicionar novos itens
+
+  if (filaPriotaria.isEmpty() && filaGeral.isEmpty()) {
+      lblPessoasFila.innerText = "Filas Vazias!";
+  } 
+  else {
+      if (!filaPriotaria.isEmpty()) {
+          lblPessoasFila.innerText = "Pessoas na fila:";
+          
+          const tituloPrioritaria = document.createElement("li");
+          tituloPrioritaria.innerText = "Fila Prioritária:";
+          listaPessoasFila.appendChild(tituloPrioritaria);
+
+          for (const atendimento of filaPriotaria) {
+              const li = document.createElement("li");
+              li.innerText = atendimento.toString();
+              listaPessoasFila.appendChild(li);
           }
       }
-    }
+      
+  if (!filaGeral.isEmpty()) {
+          const tituloSemPrioridade = document.createElement("li");
+          tituloSemPrioridade.innerText = "Fila Geral:";
+          listaPessoasFila.appendChild(tituloSemPrioridade);
+
+          for (const atendimento of filaGeral) {
+              const li = document.createElement("li");
+              li.innerText = atendimento.toString();
+              listaPessoasFila.appendChild(li);
+          }
+      }
+  }
+}
+
 //--------------------------------------------------------------------------------------------
  // funcao data
  function obterDataAtual() {
